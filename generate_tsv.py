@@ -42,7 +42,7 @@ for paper_info in content[:-1]:
         if line.startswith('#*'): # title
             title = line[2:].lower()
             # title = re.sub(r'\t', '', title)
-            title = title.replace(r'\t', 't')
+            title = title.replace('\\', '')
             if title == '':
                 title = 'NULL'
         elif line.startswith('#t'): # year
@@ -54,7 +54,7 @@ for paper_info in content[:-1]:
         elif line.startswith('#c'): # venue
             venue = line[2:].lower()
             if venue.startswith('usenix'):
-                venue = venue.replace(r'\t', 't')
+                venue = venue.replace('\\', '')
             if venue == '':
                 venue = 'NULL'
         elif line.startswith('#index'): # id
@@ -63,7 +63,7 @@ for paper_info in content[:-1]:
         elif line.startswith('#!'): # abstract
             abstract = line[2:].lower()
             # abstract = re.sub(r'\t', '', abstract)
-            abstract = abstract.replace(r'\t', 't')
+            abstract = abstract.replace('\\', '')
             flag = 1
         elif line.startswith('#%'): # citations
             assert(line[2:].isdigit())
