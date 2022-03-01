@@ -12,6 +12,7 @@ CREATE TABLE Author
 (
   AuthorID INT NOT NULL,
   AuthorName VARCHAR(100000) NOT NULL,
+  Similarity_ID INT NOT NULL,
   PRIMARY KEY (AuthorID)
 );
 
