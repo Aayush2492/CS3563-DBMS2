@@ -2,7 +2,7 @@
 Execution time: 13 seconds
 
 Generates 4 tsv files in a utils folder
-authors.tsv - author_id, author_name
+authors.tsv - author_id, author_name, similarity_id
 author_paper.tsv - author_id, paper_id, contribution_order
 paper.tsv - title, year, venue, id, abstract
 citations.tsv - paper_id, cited_paper_id
@@ -26,7 +26,7 @@ f1 = open('utils/papers.tsv', 'w', encoding='utf8')
 f2 = open('utils/citations.tsv', 'w', encoding='utf8')
 f3 = open('utils/authors.tsv', 'w', encoding='utf8')
 f4 = open('utils/author_paper.tsv', 'w', encoding='utf8')
-# author_dict = {}
+author_dict = {}
 author_id  = 1
 for paper_info in content[:-1]:
     paper_info = paper_info.split('\n')
@@ -85,16 +85,16 @@ for paper_info in content[:-1]:
         f2.write(id + '\t' + c + '\n')
     if authors[0] != 'NULL': # There are cases in source.txt where the authors are empty
         for index, a in enumerate(authors):
-            # if a not in author_dict.keys():
-            #     f3.write(str(author_id) + '\t' + a + '\n')
-            #     f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
-            #     author_id += 1
-            #     author_dict[a] = author_id
-            # else:
-            #     f4.write(str(author_dict[a]) + '\t' + id + '\t' + str(index+1) +'\n')
-            f3.write(str(author_id) + '\t' + a + '\n')
-            f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
-            author_id += 1
+            if a not in author_dict.keys():
+                f3.write(str(author_id) + '\t' + a + '\t' + '0' + '\n')
+                f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
+                author_id += 1
+                author_dict[a] = author_id
+            else:
+                f4.write(str(author_dict[a]) + '\t' + id + '\t' + str(index+1) +'\n')
+            # f3.write(str(author_id) + '\t' + a + '\n')
+            # f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
+            # author_id += 1
 
 f1.close()
 f2.close()
