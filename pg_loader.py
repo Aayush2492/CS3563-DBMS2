@@ -15,10 +15,14 @@ cur = conn.cursor()
 count = 0
 
 cur.copy_from(author_tsv, "author", sep='\t')
+print("Here1")
 cur.copy_from(paper_tsv, "researchpaper", sep='\t',
-              columns=("papertitle", "publicationyear", "venue", "paperid", "abstract"))
+               columns=("papertitle", "publicationyear", "venue", "paperid", "abstract"))
+print("Here2")
 cur.copy_from(author_paper_tsv, "authored", sep='\t', columns=("authorid", "paperid", "contributionorder"))
+print("Here3")
 cur.copy_from(citations_tsv, "citation", sep='\t')
+print("Here4")
 conn.commit()
 cur.close()
 conn.close()

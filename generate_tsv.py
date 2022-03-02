@@ -1,5 +1,5 @@
 """
-Execution time: 13 seconds
+Execution time: 18 seconds
 
 Generates 4 tsv files in a utils folder
 authors.tsv - author_id, author_name, similarity_id
@@ -16,10 +16,9 @@ Title, Venue, Abstract, Author were empty for some papers so added "NULL" as str
 import os
 # import re
 import html
-from unicodedata import name
 from pylatexenc.latex2text import LatexNodes2Text
 
-print("Running generate_tsv.py. Expected execution time: 13 seconds")
+print("Running generate_tsv.py. Expected execution time: 18 seconds")
 if not os.path.exists("utils"):
     os.mkdir("utils")
 with open('source.txt', 'r', encoding='utf8') as f:
