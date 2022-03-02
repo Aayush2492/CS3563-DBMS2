@@ -21,7 +21,7 @@ CREATE TABLE Authored
   PaperID INT NOT NULL,
   AuthorID INT NOT NULL,
   ContributionOrder INT NOT NULL,
-  PRIMARY KEY (PaperID, AuthorID),
+  -- PRIMARY KEY (PaperID, AuthorID),
   FOREIGN KEY (PaperID) REFERENCES ResearchPaper(PaperID),
   FOREIGN KEY (AuthorID) REFERENCES Author(AuthorID)
 );

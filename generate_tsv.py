@@ -16,21 +16,29 @@ Title, Venue, Abstract, Author were empty for some papers so added "NULL" as str
 import os
 # import re
 import html
+from unicodedata import name
 from pylatexenc.latex2text import LatexNodes2Text
 
+print("Running generate_tsv.py. Expected execution time: 13 seconds")
 if not os.path.exists("utils"):
     os.mkdir("utils")
 with open('source.txt', 'r', encoding='utf8') as f:
     contents = f.read()
     content = contents.split('\n\n')
-
+name_to_sim_id = {}
+with open('data/name_similarity.txt', 'r', encoding='utf8') as f:
+    for line in f:
+        if line == '':
+            continue
+        a = line.split('%')
+        name_to_sim_id[a[1][1:-1]] = a[0]
 f1 = open('utils/papers.tsv', 'w', encoding='utf8')
 f2 = open('utils/citations.tsv', 'w', encoding='utf8')
 f3 = open('utils/authors.tsv', 'w', encoding='utf8')
 f4 = open('utils/author_paper.tsv', 'w', encoding='utf8')
 author_dict = {}
 author_id  = 1
-unusual = [3710, 3730, 146445, 525455]
+unusual_hash_to_dollar = [3710, 3730, 146445, 525455]
 for paper_info in content[:-1]:
     paper_info = paper_info.split('\n')
     flag = 0
@@ -74,7 +82,9 @@ for paper_info in content[:-1]:
         elif line.startswith('#@'): # authors
             authors+= [s.strip() for s in line[2:].split(',')]
             authors = [html.unescape(s.lower()) for s in authors if s != '']
-            # authors = [s.lower() for s in authors if s != '']
+            for idx, a in enumerate(authors):
+                if a.find('\\') != -1:
+                    authors[idx] = a.replace('\\', '')
             if len(authors) == 0:
                 authors = ['NULL']
         if flag == 0:
@@ -90,19 +100,15 @@ for paper_info in content[:-1]:
     if authors[0] != 'NULL': # There are cases in source.txt where the authors are empty
         for index, a in enumerate(authors):
             if a not in author_dict.keys():
-                if author_id in unusual:
-                    print(a)
+                if author_id in unusual_hash_to_dollar:
                     a = html.unescape(a.replace('$', '#'))
-                    unusual = unusual[1:]
-                f3.write(str(author_id) + '\t' + a + '\t' + '0' + '\n')
+                    unusual_hash_to_dollar = unusual_hash_to_dollar[1:]
+                f3.write(str(author_id) + '\t' + a + '\t' + name_to_sim_id[a] + '\n')
                 f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
                 author_id += 1
                 author_dict[a] = author_id
             else:
                 f4.write(str(author_dict[a]) + '\t' + id + '\t' + str(index+1) +'\n')
-            # f3.write(str(author_id) + '\t' + a + '\t' + '0' + '\n')
-            # f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
-            # author_id += 1
 
 f1.close()
 f2.close()
