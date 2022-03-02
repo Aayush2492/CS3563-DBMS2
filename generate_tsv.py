@@ -28,9 +28,9 @@ f1 = open('utils/papers.tsv', 'w', encoding='utf8')
 f2 = open('utils/citations.tsv', 'w', encoding='utf8')
 f3 = open('utils/authors.tsv', 'w', encoding='utf8')
 f4 = open('utils/author_paper.tsv', 'w', encoding='utf8')
-# author_dict = {}
+author_dict = {}
 author_id  = 1
-unusual = [4000, 4020, 211825, 1095425]
+unusual = [3710, 3730, 146445, 525455]
 for paper_info in content[:-1]:
     paper_info = paper_info.split('\n')
     flag = 0
@@ -89,20 +89,20 @@ for paper_info in content[:-1]:
         f2.write(id + '\t' + c + '\n')
     if authors[0] != 'NULL': # There are cases in source.txt where the authors are empty
         for index, a in enumerate(authors):
-            if author_id in unusual:
-                print(a)
-                a = html.unescape(a.replace('$', '#'))
-                unusual.remove(unusual[0])
-            # if a not in author_dict.keys():
-            #     f3.write(str(author_id) + '\t' + a + '\t' + '0' + '\n')
-            #     f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
-            #     author_id += 1
-            #     author_dict[a] = author_id
-            # else:
-            #     f4.write(str(author_dict[a]) + '\t' + id + '\t' + str(index+1) +'\n')
-            f3.write(str(author_id) + '\t' + a + '\t' + '0' + '\n')
-            f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
-            author_id += 1
+            if a not in author_dict.keys():
+                if author_id in unusual:
+                    print(a)
+                    a = html.unescape(a.replace('$', '#'))
+                    unusual = unusual[1:]
+                f3.write(str(author_id) + '\t' + a + '\t' + '0' + '\n')
+                f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
+                author_id += 1
+                author_dict[a] = author_id
+            else:
+                f4.write(str(author_dict[a]) + '\t' + id + '\t' + str(index+1) +'\n')
+            # f3.write(str(author_id) + '\t' + a + '\t' + '0' + '\n')
+            # f4.write(str(author_id) + '\t' + id + '\t' + str(index+1) +'\n')
+            # author_id += 1
 
 f1.close()
 f2.close()
