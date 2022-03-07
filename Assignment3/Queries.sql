@@ -5,7 +5,7 @@ reate temp table auth as select authored.paperid , authored.authorid , authored.
 create temp table auth_list as select paperid, string_agg(auth.authorname , ',' order by contributionorder) as list from auth group by paperid;
 
 
-QUERY 2
+-- QUERY 2
 
 do $$               
 declare r record;
@@ -18,3 +18,7 @@ end if;
 end loop;
 end $$
 ;
+
+
+-- QUERY 4
+select citationpaperid_2 , count(citationpaperid_2) as count from citation group by citationpaperid_2 order by count desc limit 20;
