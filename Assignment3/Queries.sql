@@ -53,8 +53,6 @@ create temp table t2 as select * , (author1||','||author2) as pair from t1 where
 
 create temp table t3 as select pair , count(pair) from t2 group by pair;
 
-create temp table more_than_once as select * from t3 where count >1;
-
 do $$                                                               
 declare r record;
 begin
