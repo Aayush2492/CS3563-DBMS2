@@ -56,7 +56,8 @@ create temp table t3 as select pair , count(pair) from t2 group by pair;
 do $$                                                               
 declare r record;
 begin
-for r in (select * from t3) loop
+for r in (select * from t3 where count > 1) loop
 raise notice '% - %' , (select authorname from author where authorid = (split_part(r.pair , ',' , 1))::INTEGER), (select authorname from author where authorid = (split_part(r.pair , ',' , 2))::INTEGER);
 end loop;
 end $$;
+
