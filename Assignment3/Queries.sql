@@ -75,3 +75,17 @@ raise notice '% - %' , (select authorname from author where authorid = (split_pa
 end loop;
 end $$;
 
+
+
+-- QUERY 2 But in table format and can output ID and title for each (must be updated according to requirement
+select T1.paperid, T1.papertitle, T2.citationpaperid_2, T3.papertitle
+from (
+	(select paperid, papertitle from researchpaper)T1
+	full outer join
+	(select paperid_1, citationpaperid_2 from citation)T2
+	on T1.paperid = T2.paperid_1
+	full outer join
+	(select paperid, papertitle from researchpaper)T3
+	on T2.citationpaperid_2 = T3.paperid
+)
+order by T1.paperid
