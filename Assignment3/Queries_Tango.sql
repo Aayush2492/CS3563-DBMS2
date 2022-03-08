@@ -26,6 +26,16 @@ create temp table t3 as select t2.* , auth_list.list from t2 left outer join aut
 
 select * from t3;
 
+-- QUERY 3
+
+CREATE TEMP TABLE lvl2 AS 
+SELECT c1.citationpaperid_2 AS paper_id, c2.paperid_1 AS level_2
+FROM citation AS c1, citation AS c2
+WHERE c2.citationpaperid_2 = c1.paperid_1
+ORDER BY paper_id;
+
+select lvl2.*, r.papertitle, a.list, r.publicationyear, r.venue from lvl2, researchpaper as r, auth_list as a where r.paperid = lvl2.level_2 and a.paperid = lvl2.level_2 order by paper_id, level_2;
+
 
 -- QUERY 4
 create temp table auth as select authored.paperid , authored.authorid , authored.contributionorder , author.authorname from authored left join author on authored.authorid = author.authorid;
