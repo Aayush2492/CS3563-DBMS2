@@ -42,6 +42,14 @@ end $$
 ;
 
 
+--QUERY 3
+CREATE TEMP TABLE lvl2 AS 
+SELECT c1.citationpaperid_2 AS paper_id, c2.paperid_1 AS level_2
+FROM citation AS c1, citation AS c2
+WHERE c2.citationpaperid_2 = c1.paperid_1
+ORDER BY paper_id;
+
+
 -- QUERY 4
 select citationpaperid_2 , count(citationpaperid_2) as count from citation group by citationpaperid_2 order by count desc limit 20;
 
