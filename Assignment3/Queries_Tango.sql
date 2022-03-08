@@ -42,10 +42,6 @@ create temp table t2 as select * , (author1||','||author2) as pair from t1 where
 
 create temp table t3 as select pair , count(pair) from t2 group by pair;
 
-do $$                                                               
-declare r record;
-begin
-for r in (select * from t3 where count > 1) loop
-raise notice '% - %' , (select authorname from author where authorid = (split_part(r.pair , ',' , 1))::INTEGER), (select authorname from author where authorid = (split_part(r.pair , ',' , 2))::INTEGER);
-end loop;
-end $$;
+create temp table t4 as select split_part(t3.pair , ',' , 1)::INTEGER as auth1 , split_part(t3.pair , ',' , 2)::INTEGER as auth2 from t3 where count>1; 
+
+select t4.* , ((select authorname from author where authorid = t4.auth1)|| ', '||(select authorname from author where authorid = t4.auth2)) as pair_authors from t4;
