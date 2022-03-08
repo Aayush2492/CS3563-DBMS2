@@ -52,7 +52,13 @@ ORDER BY paper_id;
 
 -- QUERY 4
 select citationpaperid_2 , count(citationpaperid_2) as count from citation group by citationpaperid_2 order by count desc limit 20;
-
+-- QUERY 4 UPDATED
+select * from researchpaper as rp join (
+select citationpaperid_2 , count(citationpaperid_2) 
+as count 
+from citation group by citationpaperid_2 
+order by count desc limit 20) T2
+on rp.paperid = T2.citationpaperid_2;
 
 -- QUERY 5
 create temp table t1 as select a1.paperid ,  a1.authorid as author1, a2.authorid as author2 from authored as a1 , authored as a2 where a1.paperid = a2.paperid;
