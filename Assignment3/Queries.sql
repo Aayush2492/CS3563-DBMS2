@@ -88,4 +88,4 @@ from (
 	(select paperid, papertitle from researchpaper)T3
 	on T2.citationpaperid_2 = T3.paperid
 )
-order by T1.paperid_1
+order by T1.paperid
