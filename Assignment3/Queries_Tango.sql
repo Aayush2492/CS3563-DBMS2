@@ -115,4 +115,6 @@ create temp table cite_pair_rev  as select cp.auth_p1 as auth_p2, cp.auth_p2 as 
 
 create temp table cite_pair_undir as select * from cite_pair union select auth_p1,auth_p2 from cite_pair_rev;
 
-create temp table triangle as select c1.auth_p1 as auth1, c1.auth_p2 as auth2, c2.auth_p2 as auth3 from cite_pair_undir as c1 inner join cite_pair_undir as c2 on c1.auth_p2 = c2.auth_p1 where (select exists(select * from cite_pair_undir where cite_pair_undir.auth_p1 = c1.auth_p1 and cite_pair_undir.auth_p2 = c2.auth_p2));
+create temp table triangle as select c1.auth_p1 as auth1, c1.auth_p2 as auth2, c2.auth_p2 as auth3 from cite_pair_undir as c1 inner join cite_pair_undir as c2 on c1.auth_p2 = c2.auth_p1;
+
+select * from triangle as t where (select exists(select * from cite_pair_undir as c where c.auth_p1 = t.auth1 and c.auth_p2 = t.auth3)); 
