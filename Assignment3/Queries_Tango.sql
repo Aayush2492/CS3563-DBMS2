@@ -101,3 +101,12 @@ drop table t2;
 drop table t3;
 
 drop table t4;
+
+
+-- QUERY 6
+
+create temp table t1 as select c.*, a.authorid as auth_p1 from citation as c, authored as a where c.paperid_1 = a.paperid order by c.paperid_1;
+
+create temp table t2 as select t1.*, a.authorid as auth_p2 from t1, authored as a where t1.citationpaperid_2 = a.paperid order by t1.paperid_1, auth_p1;
+
+create temp table cite_pair as select auth_p1, auth_p2 from t2 where auth_p1 != auth_p2;
