@@ -93,3 +93,11 @@ create temp table t3 as select pair , count(pair) from t2 group by pair;
 create temp table t4 as select split_part(t3.pair , ',' , 1)::INTEGER as auth1 , split_part(t3.pair , ',' , 2)::INTEGER as auth2 from t3 where count>1; 
 
 select t4.* , ((select authorname from author where authorid = t4.auth1)|| ', '||(select authorname from author where authorid = t4.auth2)) as pair_authors from t4;
+
+drop table t1;
+
+drop table t2;
+
+drop table t3;
+
+drop table t4;
