@@ -110,3 +110,8 @@ create temp table t1 as select c.*, a.authorid as auth_p1 from citation as c, au
 create temp table t2 as select t1.*, a.authorid as auth_p2 from t1, authored as a where t1.citationpaperid_2 = a.paperid order by t1.paperid_1, auth_p1;
 
 create temp table cite_pair as select auth_p1, auth_p2 from t2 where auth_p1 != auth_p2;
+
+create temp table cite_pair_rev  as select cp.auth_p1 as auth_p2, cp.auth_p2 as auth_p1 from cite_pair as cp;
+
+create temp table cite_pair_undir as select * from cite_pair union select auth_p1,auth_p2 from cite_pair_rev;
+
