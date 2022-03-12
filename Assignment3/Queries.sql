@@ -17,6 +17,9 @@ end if;
 end loop;
 end $$
 ;
+drop table cite_in;
+drop table auth;
+drop table auth_list;
 
 
 
@@ -40,15 +43,27 @@ end if;
 end loop;
 end $$
 ;
+drop table cite;
+drop table auth;
+drop table auth_list;
 
 
 --QUERY 3
+create temp table auth as select authored.paperid , authored.authorid , authored.contributionorder , author.authorname from authored left join author on authored.authorid = author.authorid;
+
+create temp table auth_list as select paperid, string_agg(auth.authorname , ',' order by contributionorder) as list from auth group by paperid;
+
 CREATE TEMP TABLE lvl2 AS 
 SELECT c1.citationpaperid_2 AS paper_id, c2.paperid_1 AS level_2
 FROM citation AS c1, citation AS c2
 WHERE c2.citationpaperid_2 = c1.paperid_1
 ORDER BY paper_id;
 
+select lvl2.*, r.papertitle, r.publicationyear, r.venue, a.list from lvl2, researchpaper as r, auth_list as a where r.paperid = lvl2.level_2 and a.paperid = lvl2.level_2 order by paper_id, level_2;
+
+drop table lvl2;
+drop table auth;
+drop table auth_list;
 
 -- QUERY 4
 select citationpaperid_2 , count(citationpaperid_2) as count from citation group by citationpaperid_2 order by count desc limit 20;
