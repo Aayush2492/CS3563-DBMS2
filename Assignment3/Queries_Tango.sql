@@ -1,12 +1,20 @@
 -- QUERY 1
 DROP TABLE IF EXISTS auth;
-CREATE temp TABLE auth AS SELECT authored.* , author.authorname FROM authored LEFT JOIN author on authored.authorid = author.authorid;
+create temp table auth as select authored.paperid , authored.authorid , authored.contributionorder , author.authorname from authored left join author on authored.authorid = author.authorid;
 
---auth_list: paperid, list of its authors
 DROP TABLE IF EXISTS auth_list;
-CREATE temp TABLE auth_list AS SELECT paperid, string_agg(auth.authorname , ',' ORDER BY contributionorder) AS authors_list FROM auth GROUP BY paperid;
+create temp table auth_list as select paperid, string_agg(auth.authorname , ',' order by contributionorder) as list from auth group by paperid;
 
-SELECT researchpaper.paperid, citation.paperid_1, auth_list.authors_list FROM researchpaper LEFT JOIN citation ON researchpaper.paperid = citation.citationpaperid_2 LEFT JOIN auth_list ON citation.paperid_1 = auth_list.paperid  ORDER BY researchpaper.paperid;
+DROP TABLE IF EXISTS t1;
+create temp table t1 as select  paperid, paperid_1 from researchpaper left join citation on researchpaper.paperID = citation.citationpaperid_2 order by paperid;
+
+DROP TABLE IF EXISTS t2;
+create temp table t2 as select t1.*, researchpaper.papertitle, researchpaper.publicationyear , researchpaper.venue from t1 left outer join researchpaper on t1.paperid_1 = researchpaper.paperid order by t1.paperid;
+
+DROP TABLE IF EXISTS t3;
+create temp table t3 as select t2.* , auth_list.list from t2 left outer join auth_list on t2.paperid_1 = auth_list.paperid order by t2.paperid;
+
+select * from t3;
 
 -- QUERY 2
 
@@ -73,26 +81,68 @@ SELECT t4.* , ((SELECT authorname FROM author WHERE authorid = t4.auth1)|| ', '|
 
 
 -- QUERY 6
-
-create temp table t1 as select c.*, a.authorid as auth_p1 from citation as c, authored as a where c.paperid_1 = a.paperid order by c.paperid_1;
-
-create temp table t2 as select t1.*, a.authorid as auth_p2 from t1, authored as a where t1.citationpaperid_2 = a.paperid order by t1.paperid_1, auth_p1;
-
-create temp table cite_pair as select auth_p1, auth_p2 from t2 where auth_p1 != auth_p2;
-
-create temp table cite_pair_rev  as select cp.auth_p1 as auth_p2, cp.auth_p2 as auth_p1 from cite_pair as cp;
-
-create temp table cite_pair_undir as select * from cite_pair union select auth_p1,auth_p2 from cite_pair_rev;
-
-create temp table triangle as select c1.auth_p1 as auth1, c1.auth_p2 as auth2, c2.auth_p2 as auth3 from cite_pair_undir as c1 inner join cite_pair_undir as c2 on c1.auth_p2 = c2.auth_p1;
-
-select * from triangle as t where (select exists(select * from cite_pair_undir as c where c.auth_p1 = t.auth1 and c.auth_p2 = t.auth3));
-
--- Query 6 : 2nd version
-DROP TABLE IF EXISTS t1;
-CREATE temp TABLE t1 AS SELECT a1.paperid,  a1.authorid AS author1, a2.authorid AS author2, a3.authorid AS author3 FROM authored AS a1 , authored AS a2,  authored AS a3 WHERE a1.paperid = a2.paperid AND a2.paperid = a3.paperid AND a1.authorid < a2.authorid AND a2.authorid < a3.authorid; 
+DROP TABLE IF EXISTS trichain;
+CREATE temp TABLE trichain AS
+SELECT c1.paperid_1 as lvl1, c1.citationpaperid_2 as lvl2, c2.citationpaperid_2 as lvl3
+FROM citation AS c1
+LEFT JOIN citation AS c2 ON c1.citationpaperid_2 = c2.paperid_1
+WHERE c2.citationpaperid_2 IS NOT NULL AND c1.paperid_1 <> c2.citationpaperid_2;
 
 DROP TABLE IF EXISTS t2;
-CREATE temp TABLE t2 AS SELECT (author1||','||author2||','||author3) AS triplet FROM t1 ORDER BY paperid;
+CREATE temp TABLE t2 AS
+SELECT ins1.*
+FROM trichain AS ins1
+LEFT JOIN citation ON ins1.lvl3 = citation.paperid_1
+WHERE citation.citationpaperid_2 = ins1.lvl1
+UNION
+SELECT ins1.*
+FROM trichain AS ins1
+LEFT JOIN citation ON ins1.lvl1 = citation.paperid_1
+WHERE citation.citationpaperid_2 = ins1.lvl3;
 
-SELECT triplet, COUNT(triplet) as total FROM t2 GROUP BY triplet ORDER BY total DESC;
+DROP TABLE IF EXISTS t4;
+CREATE temp TABLE t4 AS
+SELECT LEAST(lvl1, lvl2, lvl3) AS lvl1,
+CASE LEAST(lvl1, lvl2, lvl3) WHEN lvl1 THEN LEAST(lvl2, lvl3)
+                         WHEN lvl2 THEN LEAST(lvl1, lvl3)
+                         WHEN lvl3 THEN LEAST(lvl1, lvl2)
+                         END AS lvl2,
+GREATEST(lvl1, lvl2, lvl3) AS lvl3
+FROM t2;
+
+DROP TABLE IF EXISTS t5;
+CREATE temp TABLE t5 AS
+SELECT DISTINCT *
+FROM t4;
+
+DROP TABLE IF EXISTS t6;
+CREATE temp TABLE t6 AS
+SELECT a1.authorid as id1, a2.authorid as id2, a3.authorid as id3
+FROM t5
+LEFT JOIN authored AS a1 ON t5.lvl1 = a1.paperid
+LEFT JOIN authored AS a2 ON t5.lvl2 = a2.paperid
+LEFT JOIN authored AS a3 ON t5.lvl3 = a3.paperid
+WHERE a1.authorid <> a2.authorid AND a2.authorid <> a3.authorid AND a1.authorid <> a3.authorid;
+
+DROP TABLE IF EXISTS t7;
+CREATE temp TABLE t7 AS
+SELECT LEAST(id1, id2, id3) AS id1,
+CASE LEAST(id1, id2, id3) WHEN id1 THEN LEAST(id2, id3)
+                         WHEN id2 THEN LEAST(id1, id3)
+                         WHEN id3 THEN LEAST(id1, id2)
+                         END AS id2,
+GREATEST(id1, id2, id3) AS id3
+FROM t6;
+
+DROP TABLE IF EXISTS t9;
+CREATE temp TABLE t9 AS
+SELECT t7.*, COUNT(*) as count
+FROM t7
+GROUP BY t7.id1, t7.id2, t7.id3;
+
+SELECT a1.authorname, a2.authorname, a3.authorname, t9.count
+FROM t9
+LEFT JOIN author as a1 ON t9.id1 = a1.authorid
+LEFT JOIN author as a2 ON t9.id2 = a2.authorid
+LEFT JOIN author as a3 ON t9.id3 = a3.authorid
+ORDER BY t9.count DESC;
